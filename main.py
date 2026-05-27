@@ -28,22 +28,56 @@ class Character:
             self.visidle = False
 
 class Enemy(Character):
-    def move(self):
-        self.x += self.speed * randint(-1, 1)
-        self.y += self.speed * randint(-1, 1)
+    def move_x(self, x):
+        if x != self.x:
+            if self.x > x:
+                if self.x - x < self.speed:
+                    self.x = x
+                else:
+                    self.x -= self.speed
+            elif self.x < x:
+                if x - self.x < self.speed:
+                    self.x = x
+                else:
+                    self.x += self.speed
+    def move_y(self, y):
+        if y != self.y:
+            if self.y > y:
+                if self.y - y < self.speed:
+                    self.y = y
+                else:
+                    self.y -= self.speed
+            elif self.y < y:
+                if y - self.y < self.speed:
+                    self.y = y
+                else:
+                    self.y += self.speed
+        
+    def move(self, x, y):
+        if x != self.x and y != self.y:
+            self.move_x(x)
+            self.move_y(y)
+        elif x != self.x:
+            self.move_x(x)
+        elif y != self.y:
+            self.move_y(y)
+
 
 images_path = { 
     "shlepa": "images/shlepa.png",
     "cheremsha": "images/cheremsha.png",
     "asphalt": "images/asphalt.png",
+    "brdish": "images/brdish.png"
 }
 loaded_images = {
     "asphalt": pygame.image.load(images_path["asphalt"])
 }
 # Создаём контроль FPS
 clock = pygame.time.Clock()
-FPS = 30  # Устанавливаем нужное значение FPS
-shlepa = Character(200, HEIGHT - 100, 10, 100, images_path["shlepa"], True)
+FPS = 60  # Устанавливаем нужное значение FPS
+shlepa = Character(200, HEIGHT - 100, 4, 100, images_path["shlepa"], True)
+cheremsha = Enemy(400, HEIGHT - 100, 2.1, 12, images_path["cheremsha"], True)
+brdish = Enemy(500, HEIGHT - 100, 2, 12, images_path["brdish"], True)
 
 # Игровые переменные, если надо, описываем в этом блоке
 
@@ -61,14 +95,18 @@ while game_run:
         shlepa.y -= shlepa.speed
     if keys[pygame.K_s]:
         shlepa.y += shlepa.speed
-    if keys[pygame.K_a]:
+    if keys[pygame.K_a]: 
         shlepa.x -= shlepa.speed
     if keys[pygame.K_d]:
         shlepa.x += shlepa.speed
+    cheremsha.move(shlepa.x, shlepa.y)
+    brdish.move(shlepa.x, shlepa.y)
     
     # БЛОК ОТРИСОВКИ ОБЪЕКТОВ В ОКНЕ ПРОГРАММЫ
     screen.blit(loaded_images["asphalt"], (0, 0), (0, 0, WIDTH, HEIGHT))
     shlepa.show(screen)
+    cheremsha.show(screen)
+    brdish.show(screen)
     
     # Обновление экрана
 
