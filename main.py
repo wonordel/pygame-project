@@ -20,7 +20,7 @@ pygame.init()
 pygame.mixer.init()
 
 # Код, описывающий окно программы
-WIDTH = 1000  # Ширина окна X
+WIDTH = 1500  # Ширина окна X
 HEIGHT = 1000 # Высота окна Y
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("Шлёпа против черемши")
@@ -145,7 +145,10 @@ images_path = {
     "cheremsha": "images/cheremsha.png",
     "asphalt": "images/asphalt.png",
     "brdish": "images/brdish.png",
-    "xarays": "images/xarays.png"
+    "xarays": "images/xarays.png",
+    "semga": "images/semga.jpg",
+    "pika": "images/pika.jpg",
+    "sefir": "images/sefir.jpg"
 }
 sounds_path = {
     "music_main": "sounds/music_main.ogg",
@@ -170,11 +173,14 @@ else:
 FPS = 60  
 font = pygame.font.SysFont("Arial", 36)
 
-shlepa = Character(200, HEIGHT - 100, 5, images_path["shlepa"], (230, 190, 150))
+shlepa = Character(randint(0, WIDTH), randint(0, HEIGHT), 5, images_path["shlepa"], (230, 190, 150))
 vead = False
 enemys = [
-    Enemy(400, 100, 2, images_path["cheremsha"], (0, 255, 0)), 
-    Enemy(800, 100, 3.5, images_path["brdish"], (255, 0, 0), False),
+    Enemy(randint(0, WIDTH), randint(0, HEIGHT), 2, images_path["cheremsha"], (0, 255, 0)), 
+    Enemy(randint(0, WIDTH), randint(0, HEIGHT), 3.5, images_path["brdish"], (255, 0, 0), False),
+    Enemy(randint(0, WIDTH), randint(0, HEIGHT), 2.5, images_path['semga'], (0, 0, 255)),
+    Enemy(randint(0, WIDTH), randint(0, HEIGHT), 3.8, images_path['sefir'], (0, 0, 255), False),
+    Enemy(randint(0, WIDTH), randint(0, HEIGHT), 3.2, images_path['pika'], (0, 0, 255), False)
 ]
 
 music_played_on_game_over = False 
