@@ -64,7 +64,6 @@ class Character:
         
         # Безопасная загрузка
         self.image = load_image(image_path, fallback_color)
-        self.rect = self.image.get_rect(center=(x, y)) # от gemini, оптимизация чтобы не лагало (до этого даже на топовом процессоре лагало) № 2
         self.half_width = self.image.get_width() // 2
         self.half_height = self.image.get_height() // 2
         
@@ -78,17 +77,23 @@ class Character:
         self.x = self.defx
         self.y = self.defy
         self.speed = self.defspeed
-    
+        
     def check_in_wall(self):
-        # от gemini, оптимизация № 2
-        if self.rect.left < 0:
-            self.rect.left = 0
-        if self.rect.right > WIDTH:
-            self.rect.right = WIDTH
-        if self.rect.top < 0:
-            self.rect.top = 0
-        if self.rect.bottom > HEIGHT:
-            self.rect.bottom = HEIGHT
+        # Левая граница
+        if self.x - self.half_width < 0:
+            self.x = self.half_width
+
+        # Правая граница
+        if self.x + self.half_width > WIDTH:
+            self.x = WIDTH - self.half_width
+
+        # Верхняя граница
+        if self.y - self.half_height < 0:
+            self.y = self.half_height
+
+        # Нижняя граница
+        if self.y + self.half_height > HEIGHT:
+            self.y = HEIGHT - self.half_height
 
 
 class Enemy(Character):
