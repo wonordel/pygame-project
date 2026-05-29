@@ -16,8 +16,6 @@ elif system == "Linux":
 
 # ==================================
 
-
-
 pygame.init()
 pygame.mixer.init()
 
@@ -32,10 +30,13 @@ def distance(x1, y1, x2, y2):
 
 def play_music(file, volume=1):
     pygame.mixer.music.stop()
-    
     pygame.mixer.music.load(file)
     pygame.mixer.music.set_volume(volume)
     pygame.mixer.music.play(-1)
+
+# Дополнительная функция для остановки музыки
+def stop_music():
+    pygame.mixer.music.stop()
 
 def load_image(path, fallback_color, size=(80, 80), use_alpha=True): # by Gemini, чтобы не лагало :)
     try:
@@ -143,36 +144,48 @@ images_path = {
     "shlepa": "images/shlepa.png",
     "cheremsha": "images/cheremsha.png",
     "asphalt": "images/asphalt.png",
-    "brdish": "images/brdish.png"
+    "brdish": "images/brdish.png",
+    "xarays": "images/xarays.png"
+}
+sounds_path = {
+    "music_main": "sounds/music_main.ogg",
+    "music_vocice": "sounds/music_vocice.ogg",
+    "music_end": "sounds/music_end.ogg"
 }
 
-# Загружаем фон асфальта (или создаем серый фон, если картинки нет)
 bg_image = load_image(images_path["asphalt"], (50, 50, 50), (WIDTH, HEIGHT))
+bg_xarays_image = load_image(images_path['xarays'], (255, 0, 0), (WIDTH, HEIGHT))
 
-# Создаём контроль FPS
 clock = pygame.time.Clock()
 frames = 0
 frames_from_respawn = 0
+frames_from_speed = 0
 red_frames = 0
+if randint(1, 1000) == 67: # Изменил значение для более частой проверки Xarays режима
+    xarays_mode = True
+    xarays = Enemy(10000, 100, 4.9, images_path['xarays'], (255, 0, 0), False)
+else:
+    xarays_mode = False
 
-# Игровые переменные
 FPS = 60  
 font = pygame.font.SysFont("Arial", 36)
 
-# Создаем персонажей
-# Аргументы: x, y, speed, путь, цвет-заглушка (на случай если картинки нет)
 shlepa = Character(200, HEIGHT - 100, 5, images_path["shlepa"], (230, 190, 150))
 vead = False
 enemys = [
     Enemy(400, 100, 2, images_path["cheremsha"], (0, 255, 0)), 
-    Enemy(800, 100, 3.5, images_path["brdish"], (255, 0, 0), False)
+    Enemy(800, 100, 3.5, images_path["brdish"], (255, 0, 0), False),
 ]
 
+music_played_on_game_over = False 
+
 def game_over():
-    global shlepa, enemys, frames_from_respawn, vead
+    global shlepa, enemys, frames_from_respawn, vead, music_played_on_game_over
     frames_survived = frames_from_respawn
     frames_from_respawn = 0
     vead = True
+    music_played_on_game_over = False
+    stop_music()
     
     for enemy in enemys:
         enemy.reset()
@@ -180,11 +193,9 @@ def game_over():
     
     return frames_survived
 
-# Игровой цикл и флаг выполнения программы
 game_run = True
-play_music("sounds/music.ogg")
+play_music(sounds_path['music_main'])
 while game_run:
-    # БЛОК ОБРАБОТКИ СОБЫТИЙ ИГРЫ
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             game_run = False
@@ -204,42 +215,57 @@ while game_run:
 
         for enemy in enemys:
             enemy.move(shlepa.x, shlepa.y)
-
-        for enemy in enemys:
             if distance(shlepa.x, shlepa.y, enemy.x, enemy.y) < (shlepa.half_width + enemy.half_width) * 0.8:
-                frames_survived = game_over()
-        screen.blit(bg_image, (0, 0))
+                frames_survived = game_over() # Вызываем game_over при столкновении
 
+        screen.blit(bg_image, (0, 0))
 
         shlepa.show(screen)
         for enemy in enemys:
             enemy.show(screen)
 
-
         seconds_survived = round(frames_from_respawn / FPS, 1)
         score_text = font.render(f"Время выживания: {seconds_survived} сек.", True, (255, 255, 255))
         screen.blit(score_text, (20, 20))
-    else:
-        pygame.mixer.music.stop()
+    else: # Состояние "vead"
+        if not music_played_on_game_over:
+            if xarays_mode:
+                play_music(sounds_path["music_vocice"])
+            else:
+                play_music(sounds_path["music_end"])
+            music_played_on_game_over = True
+
         screen.fill((255, 0, 0))
-        score_text = font.render(f"Время выживания: {round(frames_survived // FPS, 1)}", True, (255, 255, 255))
-        screen.blit(font.render("Нажмите пробел чтобы продолжить...", True, (255, 255, 255)), (WIDTH // 2 - 130, HEIGHT // 2 + 50))
+        score_text = font.render(f"Время выживания: {round(frames_survived / FPS, 1)}", True, (255, 255, 255)) # Убедитесь, что frames_survived доступна здесь
+        screen.blit(font.render("Нажмите пробел чтобы продолжить...", True, (255, 255, 255)), (WIDTH // 2 - 250, HEIGHT // 2 + 50)) # Увеличил ширину для текста
         screen.blit(score_text, (WIDTH // 2 - 130, HEIGHT // 2))
         red_frames += 1
+        
         if keys[pygame.K_SPACE]:
             vead = False
             red_frames = 0
-            if randint(1, 1000) == 1:
-                play_music("sounds/music_vocice.ogg")
+            music_played_on_game_over = False # Сбросим флаг для следующего проигрыша
+            # Решаем, какую музыку играть при рестарте
+            if randint(1, 1000) == 1: # Очень низкий шанс для "vocice"
+                play_music(sounds_path["music_vocice"])
             else:
-                play_music("sounds/music.ogg")
+                play_music(sounds_path["music_main"])
         
     # Обновление экрана
     pygame.display.flip()
 
+    if frames_from_speed >= 5 * FPS:
+        for enemy in enemys:
+            enemy.speed *= 1.1001
+        shlepa.speed *= 1.1
+        frames_from_speed = 0
+            
     # Контроль времени и тики
     clock.tick(FPS)
     frames += 1
-    frames_from_respawn += 1
+    # Обновляем frames_from_respawn только когда игра активна
+    if not vead:
+        frames_from_respawn += 1
+    frames_from_speed += 1
     
 pygame.quit()
