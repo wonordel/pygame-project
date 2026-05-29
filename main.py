@@ -265,9 +265,12 @@ while game_run:
     # Обновление экрана
     pygame.display.flip()
 
-    if frames_from_speed >= 5 * FPS:
+    if frames_from_speed >= 3 * FPS:
         for enemy in enemys:
-            enemy.speed *= 1.1001
+            if enemy.smart_moving:
+                enemy.speed *= 1.1001
+            else:
+                enemy.speed *= 1.1002
         shlepa.speed *= 1.1
         frames_from_speed = 0
             
