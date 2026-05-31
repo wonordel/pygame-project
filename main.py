@@ -270,7 +270,9 @@ while game_run:
             if enemy.smart_moving:
                 enemy.speed *= 1.1001
             else:
-                enemy.speed *= 1.1002
+                enemy.speed *= 1.1002 
+            if enemy.speed > shlepa.speed:
+                enemy.speed //= 1.2
         shlepa.speed *= 1.1
         frames_from_speed = 0
             
